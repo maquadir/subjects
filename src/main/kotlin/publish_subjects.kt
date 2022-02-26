@@ -1,4 +1,6 @@
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.subscribeBy
+import io.reactivex.rxjava3.subjects.BehaviorSubject
 import io.reactivex.rxjava3.subjects.PublishSubject
 
 /*
@@ -33,10 +35,10 @@ import io.reactivex.rxjava3.subjects.PublishSubject
 
 fun main(args: Array<String>) {
 
-    exampleOf("PublishingSubject"){
+    exampleOf("PublishingSubject") {
         val publishSubject = PublishSubject.create<Int>()
-        val subscriptionOne = publishSubject.subscribe{
-            int -> println(int)
+        val subscriptionOne = publishSubject.subscribe { int ->
+            println(int)
         }
         publishSubject.onNext(1)
         publishSubject.onNext(2)
@@ -50,10 +52,38 @@ fun main(args: Array<String>) {
         publishSubject.onNext(5)
         subscribeTwo.dispose()
         val subscriptionThree = publishSubject.subscribeBy(
-            onNext = {println(it)},
-            onComplete = { println("Complete")}
+            onNext = { println(it) },
+            onComplete = { println("Complete") }
         )
         publishSubject.onNext(6)
+    }
+
+    exampleOf("BehaviourSubjects") {
+        val subscriptions = CompositeDisposable()
+        val behaviorSubject = BehaviorSubject.createDefault("Initial value")
+        behaviorSubject.onNext("X")
+        val subscriptionOne = behaviorSubject.subscribeBy(
+            onNext = { printWithLabel("1)", it) },
+            onError = { printWithLabel("1)", it) }
+        )
+        behaviorSubject.onError(RuntimeException("Error!"))
+        subscriptions.add(behaviorSubject.subscribeBy(
+            onNext = { printWithLabel("2)", it) },
+            onError = { printWithLabel("2)", it) }
+        ))
+    }
+
+    exampleOf("Behaviour State"){
+        val subscriptions = CompositeDisposable()
+        val behaviourSubject = BehaviorSubject.createDefault(0)
+        println(behaviourSubject.value)
+
+        subscriptions.add(behaviourSubject.subscribeBy{
+            printWithLabel("1)",it)
+        })
+        behaviourSubject.onNext(1)
+        println(behaviourSubject.value)
+        subscriptions.dispose()
     }
 
 }
