@@ -2,6 +2,7 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.subscribeBy
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import io.reactivex.rxjava3.subjects.PublishSubject
+import io.reactivex.rxjava3.subjects.ReplaySubject
 
 /*
  * Copyright (c) 2020 Razeware LLC
@@ -73,17 +74,43 @@ fun main(args: Array<String>) {
         ))
     }
 
-    exampleOf("Behaviour State"){
+    exampleOf("Behaviour State") {
         val subscriptions = CompositeDisposable()
         val behaviourSubject = BehaviorSubject.createDefault(0)
         println(behaviourSubject.value)
 
-        subscriptions.add(behaviourSubject.subscribeBy{
-            printWithLabel("1)",it)
+        subscriptions.add(behaviourSubject.subscribeBy {
+            printWithLabel("1)", it)
         })
         behaviourSubject.onNext(1)
         println(behaviourSubject.value)
         subscriptions.dispose()
+    }
+
+    exampleOf("ReplaySUbject") {
+        val subscriptions = CompositeDisposable()
+        val replaySubject = ReplaySubject.createWithSize<String>(3)
+        replaySubject.onNext("1")
+        replaySubject.onNext("2")
+        replaySubject.onNext("3")
+
+        subscriptions.add(replaySubject.subscribeBy(
+            onNext = { printWithLabel("1)", it) },
+            onError = { printWithLabel("1)", it) }
+        ))
+
+        subscriptions.add(replaySubject.subscribeBy(
+            onNext = { printWithLabel("2)", it) },
+            onError = { printWithLabel("2)", it) }
+        ))
+
+        replaySubject.onNext("4")
+        replaySubject.onError(RuntimeException("Error!"))
+
+        subscriptions.add(replaySubject.subscribeBy(
+            onNext = { printWithLabel("3)", it) },
+            onError = { printWithLabel("3)", it) }
+        ))
     }
 
 }
