@@ -1,3 +1,4 @@
+import com.jakewharton.rxrelay3.PublishRelay
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.subscribeBy
 import io.reactivex.rxjava3.subjects.AsyncSubject
@@ -114,26 +115,39 @@ fun main(args: Array<String>) {
         ))
     }
 
-    exampleOf("Async Subject"){
+    exampleOf("Async Subject") {
         val subcriptions = CompositeDisposable()
         val asyncSubject = AsyncSubject.create<Int>()
 
         subcriptions.add(asyncSubject.subscribeBy(
-            onNext = {printWithLabel("1)", it)},
-            onComplete = {printWithLabel("1)", "Completed")}
+            onNext = { printWithLabel("1)", it) },
+            onComplete = { printWithLabel("1)", "Completed") }
         ))
 
         asyncSubject.onNext(1)
 
         subcriptions.add(asyncSubject.subscribeBy(
-            onNext = {printWithLabel("2)", it)},
-            onComplete = {printWithLabel("2)", "Completed")}
+            onNext = { printWithLabel("2)", it) },
+            onComplete = { printWithLabel("2)", "Completed") }
         ))
 
         asyncSubject.onNext(2)
         asyncSubject.onNext(3)
         asyncSubject.onComplete()
         subcriptions.dispose()
+    }
+
+    exampleOf("RxRelay") {
+        val subscriptions = CompositeDisposable()
+
+        val publishRelay = PublishRelay.create<Int>()
+        subscriptions.add(publishRelay.subscribeBy(
+            onNext = { printWithLabel("1)", it) }
+        ))
+
+        publishRelay.accept(1)
+        publishRelay.accept(2)
+        publishRelay.accept(3)
     }
 
 }
