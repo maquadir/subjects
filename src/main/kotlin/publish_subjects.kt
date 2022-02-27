@@ -1,5 +1,6 @@
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.subscribeBy
+import io.reactivex.rxjava3.subjects.AsyncSubject
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import io.reactivex.rxjava3.subjects.PublishSubject
 import io.reactivex.rxjava3.subjects.ReplaySubject
@@ -111,6 +112,28 @@ fun main(args: Array<String>) {
             onNext = { printWithLabel("3)", it) },
             onError = { printWithLabel("3)", it) }
         ))
+    }
+
+    exampleOf("Async Subject"){
+        val subcriptions = CompositeDisposable()
+        val asyncSubject = AsyncSubject.create<Int>()
+
+        subcriptions.add(asyncSubject.subscribeBy(
+            onNext = {printWithLabel("1)", it)},
+            onComplete = {printWithLabel("1)", "Completed")}
+        ))
+
+        asyncSubject.onNext(1)
+
+        subcriptions.add(asyncSubject.subscribeBy(
+            onNext = {printWithLabel("2)", it)},
+            onComplete = {printWithLabel("2)", "Completed")}
+        ))
+
+        asyncSubject.onNext(2)
+        asyncSubject.onNext(3)
+        asyncSubject.onComplete()
+        subcriptions.dispose()
     }
 
 }
